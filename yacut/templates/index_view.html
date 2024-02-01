@@ -19,8 +19,10 @@
           {% if short %}
           <div>
             <div>
-                <p>
-                  {{ short }}         
+                <p class="text-center my-4">
+                  <a href="{{ url_for('redirect_view', link=short, _external=True) }}">
+                    {{ url_for('redirect_view', link=short, _external=True)  }}
+                  </a>       
                 </p>
             </div>
           </div>
@@ -31,8 +33,8 @@
               <div>
                 {{ form.original_link(class="form-control form-control-lg py-2 mb-3", placeholder=form.original_link.label.text) }}
                   <p>
-                    {% if form.title.errors %}
-                      {% for error in form.title.errors %}
+                    {% if form.original_link.errors %}
+                      {% for error in form.original_link.errors %}
                         <span style="color: red">{{ error }}</span>
                       {% endfor %}
                     {% endif %}
@@ -41,8 +43,8 @@
               <div>
                 {{ form.custom_id(class="form-control form-control-lg py-2 mb-3", placeholder=form.custom_id.label.text) }}
                 <p>
-                  {% if form.title.errors %}
-                    {% for error in form.title.errors %}
+                  {% if form.custom_id.errors %}
+                    {% for error in form.custom_id.errors %}
                       <span style="color: red">{{ error }}</span>
                     {% endfor %}
                   {% endif %}
