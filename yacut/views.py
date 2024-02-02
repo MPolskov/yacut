@@ -27,12 +27,19 @@ def index_view():
     form = URLMapForm()
     if form.validate_on_submit():
         custom_id = form.custom_id.data
-        match custom_id:
-            case '' | None:
-                custom_id = get_unique_short_id()
-            case id if URLMap.query.filter_by(short=id).first():
-                flash(SHORT_LINK_EXIST)
-                return render_template('index_view.html', form=form)
+        # Python 3.9
+        if custom_id in ['', None]:
+            custom_id = get_unique_short_id()
+        elif URLMap.query.filter_by(short=custom_id).first():
+            flash(SHORT_LINK_EXIST)
+            return render_template('index_view.html', form=form)
+        # Python 3.10+
+        # match custom_id:
+        #     case '' | None:
+        #         custom_id = get_unique_short_id()
+        #     case id if URLMap.query.filter_by(short=id).first():
+        #         flash(SHORT_LINK_EXIST)
+        #         return render_template('index_view.html', form=form)
         url_map = URLMap(
             original=form.original_link.data,
             short=custom_id

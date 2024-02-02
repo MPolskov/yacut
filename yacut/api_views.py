@@ -32,13 +32,21 @@ def add_opinion():
     if 'url' not in data:
         raise InvalidAPIUsage(EMPTY_URL)
     if 'custom_id' in data:
-        match data['custom_id']:
-            case '' | None:
-                data['custom_id'] = get_unique_short_id()
-            case id if re.fullmatch(PATTERN, id) is None:
-                raise InvalidAPIUsage(NOT_VALID_LINK, 400)
-            case id if URLMap.query.filter_by(short=id).first():
-                raise InvalidAPIUsage(SHORT_LINK_EXIST, 400)
+        # Python 3.9:
+        if data['custom_id'] in ['', None]:
+            data['custom_id'] = get_unique_short_id()
+        elif re.fullmatch(PATTERN, data['custom_id']) is None:
+            raise InvalidAPIUsage(NOT_VALID_LINK, 400)
+        elif URLMap.query.filter_by(short=data['custom_id']).first():
+            raise InvalidAPIUsage(SHORT_LINK_EXIST, 400)
+        # Python 3.10+:
+        # match data['custom_id']:
+        #     case '' | None:
+        #         data['custom_id'] = get_unique_short_id()
+        #     case id if re.fullmatch(PATTERN, id) is None:
+        #         raise InvalidAPIUsage(NOT_VALID_LINK, 400)
+        #     case id if URLMap.query.filter_by(short=id).first():
+        #         raise InvalidAPIUsage(SHORT_LINK_EXIST, 400)
     else:
         data['custom_id'] = get_unique_short_id()
     url_map = URLMap(
