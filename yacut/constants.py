@@ -1,7 +1,9 @@
+import re
 from string import ascii_lowercase, ascii_uppercase, digits
 
 # Values
 VALID_VALUE = ascii_uppercase + ascii_lowercase + digits
+PATTERN = re.compile(r'^[a-zA-Z0-9]{1,16}$')
 
 # Errors
 EMPTY_REQUEST = 'Отсутствует тело запроса'

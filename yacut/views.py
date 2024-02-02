@@ -12,11 +12,14 @@ from .constants import (
 
 
 def get_unique_short_id():
-    # short_url_list = URLMap.query.all()
-    while True:
+    short_url_list = [item.short for item in URLMap.query.all()]
+    count = 0
+    while count < 1000:
         short = ''.join(random.choices(VALID_VALUE, k=6))
-        if URLMap.query.filter_by(short=short).first() is None:
+        if short not in short_url_list:
             return short
+        count += 1
+    abort(500)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -24,11 +27,12 @@ def index_view():
     form = URLMapForm()
     if form.validate_on_submit():
         custom_id = form.custom_id.data
-        if URLMap.query.filter_by(short=custom_id).first():
-            flash(SHORT_LINK_EXIST)
-            return render_template('index_view.html', form=form)
-        if not custom_id:
-            custom_id = get_unique_short_id()
+        match custom_id:
+            case '' | None:
+                custom_id = get_unique_short_id()
+            case id if URLMap.query.filter_by(short=id).first():
+                flash(SHORT_LINK_EXIST)
+                return render_template('index_view.html', form=form)
         url_map = URLMap(
             original=form.original_link.data,
             short=custom_id
