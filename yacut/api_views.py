@@ -26,13 +26,13 @@ def get_opinion(link):
 @app.route('/api/id/', methods=['POST'])
 def add_opinion():
     data = request.get_json()
-    if data is None:  # TODO возможно нужно по другому.
+    if data is None:
         raise InvalidAPIUsage(EMPTY_REQUEST)
     if 'url' not in data:
         raise InvalidAPIUsage(EMPTY_URL)
     if 'custom_id' in data:
         if URLMap.query.filter_by(short=data['custom_id']).first() is not None:
-            raise InvalidAPIUsage(SHORT_LINK_EXIST)
+            raise InvalidAPIUsage(SHORT_LINK_EXIST, 400)
         elif len(data['custom_id']) > 16:
             raise InvalidAPIUsage(TOO_LONG_LINK)
         elif not all([True if i in VALID_VALUE else False for i in data['custom_id']]):
