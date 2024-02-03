@@ -1,4 +1,5 @@
 import random
+from http import HTTPStatus
 
 from flask import abort, flash, redirect, render_template
 
@@ -19,7 +20,7 @@ def get_unique_short_id():
         if short not in short_url_list:
             return short
         count += 1
-    abort(500)
+    abort(HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -28,7 +29,7 @@ def index_view():
     if form.validate_on_submit():
         custom_id = form.custom_id.data
         # Python 3.9
-        if custom_id in ['', None]:
+        if custom_id is None or custom_id == '':
             custom_id = get_unique_short_id()
         elif URLMap.query.filter_by(short=custom_id).first():
             flash(SHORT_LINK_EXIST)
@@ -52,7 +53,5 @@ def index_view():
 
 @app.route('/<string:link>')
 def redirect_view(link):
-    obj = URLMap.query.filter_by(short=link).first()
-    if obj is not None:
-        return redirect(obj.original)
-    abort(404)
+    obj = URLMap.query.filter_by(short=link).first_or_404()
+    return redirect(obj.original)

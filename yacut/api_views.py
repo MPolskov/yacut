@@ -1,4 +1,5 @@
 import re
+from http import HTTPStatus
 
 from flask import jsonify, request, url_for
 
@@ -17,15 +18,15 @@ from .constants import (
 
 
 @app.route('/api/id/<string:link>/', methods=['GET'])
-def get_opinion(link):
+def get_original_link(link):
     url = URLMap.query.filter_by(short=link).first()
     if url is None:
-        raise InvalidAPIUsage(LINK_NOT_EXIST, 404)
-    return jsonify({'url': url.original}), 200
+        raise InvalidAPIUsage(LINK_NOT_EXIST, HTTPStatus.NOT_FOUND)
+    return jsonify({'url': url.original}), HTTPStatus.OK
 
 
 @app.route('/api/id/', methods=['POST'])
-def add_opinion():
+def add_short_link():
     data = request.get_json()
     if data is None:
         raise InvalidAPIUsage(EMPTY_REQUEST)
@@ -33,20 +34,20 @@ def add_opinion():
         raise InvalidAPIUsage(EMPTY_URL)
     if 'custom_id' in data:
         # Python 3.9:
-        if data['custom_id'] in ['', None]:
+        if data['custom_id'] in ('', None):
             data['custom_id'] = get_unique_short_id()
         elif re.fullmatch(PATTERN, data['custom_id']) is None:
-            raise InvalidAPIUsage(NOT_VALID_LINK, 400)
+            raise InvalidAPIUsage(NOT_VALID_LINK, HTTPStatus.BAD_REQUEST)
         elif URLMap.query.filter_by(short=data['custom_id']).first():
-            raise InvalidAPIUsage(SHORT_LINK_EXIST, 400)
+            raise InvalidAPIUsage(SHORT_LINK_EXIST, HTTPStatus.BAD_REQUEST)
         # Python 3.10+:
         # match data['custom_id']:
         #     case '' | None:
         #         data['custom_id'] = get_unique_short_id()
         #     case id if re.fullmatch(PATTERN, id) is None:
-        #         raise InvalidAPIUsage(NOT_VALID_LINK, 400)
+        #         raise InvalidAPIUsage(NOT_VALID_LINK, HTTPStatus.BAD_REQUEST)
         #     case id if URLMap.query.filter_by(short=id).first():
-        #         raise InvalidAPIUsage(SHORT_LINK_EXIST, 400)
+        #         raise InvalidAPIUsage(SHORT_LINK_EXIST, HTTPStatus.BAD_REQUEST)
     else:
         data['custom_id'] = get_unique_short_id()
     url_map = URLMap(
@@ -64,4 +65,4 @@ def add_opinion():
                 _external=True
             )
         }
-    ), 201
+    ), HTTPStatus.CREATED
