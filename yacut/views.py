@@ -1,26 +1,22 @@
 import random
-from http import HTTPStatus
 
-from flask import abort, flash, redirect, render_template
+from flask import flash, redirect, render_template
 
 from . import app, db
 from .forms import URLMapForm
 from .models import URLMap
 from .constants import (
     VALID_VALUE,
-    SHORT_LINK_EXIST
+    SHORT_LINK_EXIST,
+    SHORT_LINK_LENGTH
 )
 
 
 def get_unique_short_id():
-    short_url_list = [item.short for item in URLMap.query.all()]
-    count = 0
-    while count < 1000:
-        short = ''.join(random.choices(VALID_VALUE, k=6))
-        if short not in short_url_list:
+    while True:
+        short = ''.join(random.choices(VALID_VALUE, k=SHORT_LINK_LENGTH))
+        if URLMap.query.filter_by(short=short).first() is None:
             return short
-        count += 1
-    abort(HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 @app.route('/', methods=['GET', 'POST'])
